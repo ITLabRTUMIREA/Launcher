@@ -22,88 +22,42 @@ namespace Launcher.WPF.Services
                 Title = "Вход в аккаунт"
             };
 
-            var browser = new WebView();
-
-            var signal = new SemaphoreSlim(0, 1);
+            var browser = new WebBrowser();
 
             var result = new BrowserResult
             {
                 ResultType = BrowserResultType.UserCancel
             };
 
-            browser.DOMContentLoaded += (s, e) =>
+            using (var signal = new SemaphoreSlim(0, 1))
             {
-                Log($"Loaded {e?.ToString()}");
-
-            };
-
-            browser.Loaded += (s, e) =>
-            {
-                Log($"Loaded {e?.ToString()}");
-
-            };
-
-            browser.NavigationCompleted += (s, e) =>
-            {
-                Log($"NavigationCompleted {e.Uri.AbsoluteUri}");
-
-            };
-            browser.NavigationStarting += (s, e) =>
-            {
-                Log($"NavigationStarting {e.Uri.AbsoluteUri}");
-                if (!e.Uri.AbsoluteUri.StartsWith(options.EndUrl))
-                    return;
-                e.Cancel = true;
-
-                var responseData = GetResponseDataFromFormPostPage(browser);
-                result = new BrowserResult
+                browser.Navigating += (s, e) =>
                 {
-                    ResultType = BrowserResultType.Success,
-                    Response = responseData
+                    if (!e.Uri.AbsoluteUri.StartsWith(options.EndUrl))
+                        return;
+                    e.Cancel = true;
+
+                    result = new BrowserResult
+                    {
+                        ResultType = BrowserResultType.Success,
+                        Response = e.Uri.Query
+                    };
+
+                    signal.Release();
+                    window.Close();
                 };
 
-                signal.Release();
-                window.Close();
-            };
+                window.Closing += (s, e) => signal.Release();
 
-            window.Closing += (s, e) => signal.Release();
+                window.Content = browser;
 
-            window.Content = browser;
+                window.Show();
+                browser.Navigate(new Uri(options.StartUrl));
 
-            window.Show();
-            browser.Navigate(new Uri(options.StartUrl));
-
-            await signal.WaitAsync();
+                await signal.WaitAsync();
+            }
 
             return result;
-        }
-
-        private string GetResponseDataFromFormPostPage(WebView webBrowser)
-        {
-            return "?data=123";
-
-            //var document = (IHTMLDocument3)webBrowser.Document;
-            //var inputElements = document.getElementsByTagName("INPUT").OfType<IHTMLElement>();
-            //var resultUrl = "?";
-
-            //foreach (var input in inputElements)
-            //{
-            //    resultUrl += input.getAttribute("name") + "=";
-            //    resultUrl += input.getAttribute("value") + "&";
-            //}
-
-            //resultUrl = resultUrl.TrimEnd('&');
-
-            //return resultUrl;
-        }
-
-        private object locker = new object();
-        private void Log(string message)
-        {
-            lock(locker)
-            {
-                File.AppendAllLines(@"log.txt", new string[] { message });
-            }
         }
     }
 }

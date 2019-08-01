@@ -31,11 +31,11 @@ namespace Launcher.WPF
             {
                 Authority = "http://127.0.0.1:5000",
                 ClientId = "launcher",
-                Scope = "games",
+                Scope = "openid profile games",
                 RedirectUri = "http://127.0.0.1/callback",
-                ResponseMode = OidcClientOptions.AuthorizeResponseMode.FormPost,
+                ResponseMode = OidcClientOptions.AuthorizeResponseMode.Redirect,
                 Flow = OidcClientOptions.AuthenticationFlow.AuthorizationCode,
-                Browser = new WpfBrowser()
+                Browser = new WpfBrowser(),
             };
             var oidcClient = new OidcClient(options);
 
@@ -61,7 +61,7 @@ namespace Launcher.WPF
             else
             {
                 var name = result.User.Identity.Name;
-                MessageBox.Show($"Hello {name}");
+                MessageBox.Show($"Hello {name} {result.RefreshTokenHandler}");
             }
         }
     }

@@ -11,8 +11,10 @@ namespace Launcher.WPF.Models
 {
     class LoginModel : BindableBase
     {
-        public bool IsAuthorized { get; private set; } = false;
-        public async Task StartAuthorize()
+        private bool isAuthorized = false;
+
+        public bool IsAuthorized { get => isAuthorized; private set => SetProperty(ref isAuthorized, value); }
+        public async Task Authorize()
         {
             IsAuthorized = false;
 
@@ -41,6 +43,7 @@ namespace Launcher.WPF.Models
             {
                 var name = result.User.Identity.Name;
                 MessageBox.Show($"Hello {name} {result.RefreshTokenHandler}");
+                IsAuthorized = true;
             }
         }
     }

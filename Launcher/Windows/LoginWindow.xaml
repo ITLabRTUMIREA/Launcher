@@ -4,11 +4,14 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Launcher.WPF.Windows"
+        xmlns:viewmodels="clr-namespace:Launcher.WPF.ViewModels"
         mc:Ignorable="d"
-        Title="LoginWindow" Height="450" Width="800">
+        Title="LoginWindow" Height="477" Width="245">
+    <Window.DataContext>
+        <viewmodels:LoginVM/>
+    </Window.DataContext>
     <Grid>
-        <StackPanel>
-            <Button Content="Войти"/>
-        </StackPanel>
+        <Button HorizontalAlignment="Center" VerticalAlignment="Center" Content="Войти" Command="{Binding LoginCommand}"/>
+        <WebBrowser Visibility="{Binding BrowserVisibility}"/>
     </Grid>
 </Window>
